@@ -20,7 +20,8 @@ function align_all(rois; shifts=nothing, positions=nothing, iterations=500, verb
             if isnothing(shifts)
                 to_center = rois[n] # gaussf(rois[n], 1.0)
                 params, _, _ = gauss_fit(to_center, iterations=iterations, verbose=verbose)
-                params[:μ], all(params[:FWHM] .< size(rois[n])) && all(params[:FWHM] .> 0.0)
+                @show params
+                params[:μ], all(params[:FWHMs] .< size(rois[n])) && all(params[:FWHMs] .> 0.0)
             else
                 shifts[n], true
             end
@@ -172,7 +173,7 @@ a tuple of  `(mypsf, rois, positions, selected, params, fwd)`
 + `fwd`: the (forward projected) fit results in the selected ROIs 
 
 """
-function distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thresh=0.1, min_dist=nothing, roi_size = Tuple(15 .* ones(Int, ndims(img))), verbose=true, upper_thresh=nothing, pixelsize=1.0, preferred_z=nothing)
+function distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thresh=0.1, min_dist=nothing, roi_size = Tuple(15 .* ones(Int, ndims(img))), verbose=true, upper_thresh=nothing, pixelsize=1.0, preferred_z=nothing, gauss_fitting=true)
     # may also upcast to Float32
     img, bg = remove_background(img,2 .*σ) 
     println("Subtracted a background of $(bg)")
@@ -233,9 +234,15 @@ function distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thr
 
     psf, _ = remove_background(psf,σ)
     if !isempty(psf)
-        params, fwd, allp = gauss_fit(psf, verbose=verbose, pixelsize=pixelsize);
+        try
+            params, fwd, allp = gauss_fit(psf, verbose=verbose, pixelsize=pixelsize);
 
-        return (psf, rois, positions, selected, params, fwd)
+            return (psf, rois, positions, selected, params, fwd)
+        catch
+
+            return (psf, rois, positions, selected, [], [])
+        end
+
     else
         return [],[],[],positions,[],[]
     end
