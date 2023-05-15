@@ -148,6 +148,8 @@ end
 """
     distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thresh=0.1, min_dist=16.0, roi_size = Tuple(15 .* ones(Int, ndims(img))), upper_thresh=nothing, pixelsize=1.0)
 
+
+    EDITED!
 automatically extracts multiple PSFs from one dataset, alignes and averages them. The input image `img` should contain a sparse set of PSF measurements
 obtained by imagin beads, QDots or NV centers.
 If you want to apply this to multicolor or multimode datasets, run it first on one channel and then again on the other channels using the `positions` argument.
