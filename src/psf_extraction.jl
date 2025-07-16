@@ -214,8 +214,12 @@ function distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thr
         all_max_vec = cart_to_mat(all_max)
         @info "Found $(length(all_max)) maxima to consider"
 
-        nndist, _ = nn_mutual(all_max_vec)
-        valid_nn = nndist .> min_dist
+        if length(all_max) > 1
+            nndist, _ = nn_mutual(all_max_vec)
+            valid_nn = nndist .> min_dist
+        else
+            valid_nn = [true]
+        end
 
         @info "Found $(sum(valid_nn)) beads to consider with sufficient distance $(min_dist)"
         if !isnothing(upper_thresh)
@@ -226,7 +230,8 @@ function distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thr
         all_max_vec = remove_border(all_max_vec, size(gimg), roisz./2; valid=valid_nn)
         @info "Removed border. $(length(all_max_vec)) beads remaining."
         if length(all_max_vec) < 1
-            error("No beads were found which are valid.")
+            @warn "No beads were found which are valid."
+            return ([],[],[],[],[],[])
         end
 
         all_max_vec = let
@@ -255,7 +260,7 @@ function distille_PSF(img, σ=1.3; positions=nothing, force_align=false, rel_thr
 
         return (psf, rois, positions, selected, params, fwd)
     else
-        return [],[],[],positions,[],[]
+        return ([],[],[],positions,[],[])
     end
 end
 
