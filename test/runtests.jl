@@ -17,4 +17,10 @@ mypsf, rois, positions, selected, params, fwd = distille_PSF(perfect_img)
 params2, fwd2, allp2 = PSFDistiller.gauss_fit(mypsf)
 @test all(abs.(params2[:σ] .- sigma) .< 1e-4)
 
+data = zeros(50,50)
+data[24:26,24:26] .= 1.0
+mypsf2, rois2, positions2, selected2, params3, fwd3 = distille_PSF(data)
+@test length(positions2) == 1
+@test all(abs.(positions2[1] .- [25.0;25.0]) .< 1e-4)
+
 end
